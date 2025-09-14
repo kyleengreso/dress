@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRESS: Dress-code Recognition Surveillance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="static/css/shared.css" rel="stylesheet">
+    <link href="static/css/detection.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="main-container p-4">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Home
+                    </a>
+                    <div class="text-center flex-grow-1">
+                        <h1 class="header-title">
+                            <i class="fas fa-user-check me-3"></i>
+                            Dress Code Detection System
+                        </h1>
+                    </div>
+                    <div style="width: 120px;"></div> <!-- Spacer for alignment -->
+                </div>
+                <p class="text-muted">Upload an image or capture from webcam to check dress code compliance</p>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Left Side - Upload/Capture Section -->
+                <div class="col-lg-6">
+                    <div class="upload-section p-4 d-flex flex-column align-items-center justify-content-center">
+                        <div class="text-center w-100">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h4>Upload Image or Capture from Webcam</h4>
+                            
+                            <!-- Mode Selection -->
+                            <div class="mb-3">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="detectionMode" id="uploadMode" checked>
+                                    <label class="btn btn-outline-primary" for="uploadMode">
+                                        <i class="fas fa-upload me-2"></i>Upload Image
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="detectionMode" id="liveMode">
+                                    <label class="btn btn-outline-success" for="liveMode">
+                                        <i class="fas fa-video me-2"></i>Live Detection
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Upload Mode -->
+                            <div id="uploadSection">
+                                <!-- File Upload -->
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="imageInput" accept="image/*" style="display: none;">
+                                    <button class="btn btn-custom me-2" onclick="document.getElementById('imageInput').click()">
+                                        <i class="fas fa-upload me-2"></i>Choose Image
+                                    </button>
+                                    <button class="btn btn-custom" id="cameraBtn">
+                                        <i class="fas fa-camera me-2"></i>Use Camera
+                                    </button>
+                                </div>
+                                
+                                <!-- Camera Preview -->
+                                <div id="cameraContainer" class="mb-3">
+                                    <video id="cameraPreview" class="camera-preview" autoplay></video>
+                                    <div id="cameraControls" style="display: none;" class="mt-2">
+                                        <button class="btn btn-success me-2" id="captureBtn">
+                                            <i class="fas fa-camera me-2"></i>Capture
+                                        </button>
+                                        <button class="btn btn-secondary" id="stopCameraBtn">
+                                            <i class="fas fa-stop me-2"></i>Stop Camera
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Preview Image -->
+                                <div id="imagePreview" class="mb-3" style="display: none;">
+                                    <img id="previewImg" class="detection-image" alt="Preview">
+                                </div>
+                                
+                                <!-- Detect Button -->
+                                <button class="btn btn-custom btn-lg" id="detectBtn" disabled>
+                                    <i class="fas fa-search me-2"></i>Detect Dress Code
+                                </button>
+                            </div>
+                            
+                            <!-- Live Detection Mode -->
+                            <div id="liveSection" style="display: none;">
+                                <!-- Live Camera Feed -->
+                                <div class="mb-3">
+                                    <div id="liveVideoContainer" class="text-center">
+                                        <img id="liveVideoFeed" class="detection-image" style="display: none;" alt="Live Feed">
+                                        <div id="liveVideoPlaceholder" class="text-muted">
+                                            <i class="fas fa-video fa-3x mb-3"></i>
+                                            <p>Click "Start Live Detection" to begin monitoring</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Live Controls -->
+                                <div class="text-center mb-3">
+                                    <button class="btn btn-success btn-lg me-2" id="startLiveBtn">
+                                        <i class="fas fa-play me-2"></i>Start Live Detection
+                                    </button>
+                                    <button class="btn btn-danger btn-lg" id="stopLiveBtn" style="display: none;">
+                                        <i class="fas fa-stop me-2"></i>Stop Detection
+                                    </button>
+                                </div>
+                                
+                                <!-- Live Status -->
+                                <div id="liveStatus" class="alert alert-info" style="display: none;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <span id="liveStatusText">Initializing live detection...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Student ID Input (Optional) -->
+                            <div class="mb-3">
+                                <label for="studentId" class="form-label">Student ID (Optional)</label>
+                                <input type="number" class="form-control" id="studentId" placeholder="Enter student ID for logging">
+                            </div>
+                            
+                            <!-- Loading Spinner -->
+                            <div class="loading-spinner mt-3" id="loadingSpinner" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Processing image...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Side - Results Section -->
+                <div class="col-lg-6">
+                    <div class="results-section p-4">
+                        <h4 class="mb-4">
+                            <i class="fas fa-chart-line me-2"></i>Detection Results
+                        </h4>
+                        
+                        <div id="resultsContainer" style="display: none;">
+                            <!-- Compliance Status -->
+                            <div class="text-center mb-4">
+                                <div id="complianceStatus" class="compliance-badge d-inline-block">
+                                    Waiting for detection...
+                                </div>
+                            </div>
+                            
+                            <!-- Detected Image -->
+                            <div class="text-center mb-4">
+                                <img id="resultImage" class="detection-image" alt="Detection Result" style="display: none;">
+                            </div>
+                            
+                            <!-- Detection Details -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-eye me-2"></i>Detected Items</h6>
+                                    <div id="detectedItems"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Missing Items</h6>
+                                    <div id="missingItems"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gender Detection -->
+                            <div class="mt-3">
+                                <h6><i class="fas fa-user me-2"></i>Detected Gender</h6>
+                                <span id="detectedGender" class="badge bg-info"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Initial State -->
+                        <div id="initialState" class="text-center text-muted">
+                            <i class="fas fa-image fa-3x mb-3"></i>
+                            <p>Upload an image or capture from webcam to see detection results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/shared.js"></script>
+    <script src="static/js/detection.js"></script>
+</body>
+</html>
